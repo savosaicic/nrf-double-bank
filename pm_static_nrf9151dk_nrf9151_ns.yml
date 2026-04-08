@@ -1,0 +1,205 @@
+# ================================= NSIB (b0) ==================================
+b0:
+  address: 0x0
+  size: 0x8000
+  region: flash_primary
+
+b0_container:
+  address: 0x0
+  size: 0x8000
+  region: flash_primary
+  span: [b0]
+
+# ========================== MCUboot slot 0 (active) ===========================
+s0_pad:
+  address: 0x8000
+  size: 0x200
+  region: flash_primary
+
+mcuboot:
+  address: 0x8200
+  size: 0xbe00
+  region: flash_primary
+
+s0_image:
+  address: 0x8200
+  size: 0xbe00
+  region: flash_primary
+  span: [mcuboot]
+
+s0:
+  address: 0x8000
+  size: 0xc000
+  region: flash_primary
+  span: [s0_pad, mcuboot]
+
+# ============================= Alignment padding ==============================
+# Fill the gap between s0 and s1 so PM sees exactly one gap (for app)
+s0_s1_pad:
+  address: 0x14000
+  size: 0x4000
+  region: flash_primary
+
+# ========================== MCUboot slot 1 (upgrade) ==========================
+s1_pad:
+  address: 0x18000
+  size: 0x200
+  region: flash_primary
+
+s1_image:
+  address: 0x18200
+  size: 0xbe00
+  region: flash_primary
+
+s1:
+  address: 0x18000
+  size: 0xc000
+  region: flash_primary
+  span: [s1_pad, s1_image]
+
+# ============================= Alignment padding ==============================
+# Fill the gap between s1 and mcuboot_primary
+s1_mcuboot_pad:
+  address: 0x24000
+  size: 0x4000
+  region: flash_primary
+
+# =========================== Image 0: bank0 primary ===========================
+mcuboot_pad:
+  address: 0x28000
+  size: 0x200
+  region: flash_primary
+
+tfm:
+  address: 0x28200
+  size: 0x7e00
+  region: flash_primary
+
+# NOTE: 'app' is not defined here, PM places it dynamically
+# inside mcuboot_primary, filling 0x30000-0x68000
+
+mcuboot_primary:
+  address: 0x28000
+  size: 0x40000
+  region: flash_primary
+  span: [mcuboot_pad, tfm, app]
+
+mcuboot_primary_app:
+  address: 0x28200
+  size: 0x3fe00
+  region: flash_primary
+  span: [tfm, app]
+
+app_image:
+  address: 0x28200
+  size: 0x3fe00
+  region: flash_primary
+  span: [tfm, app]
+
+tfm_nonsecure:
+  address: 0x30000
+  size: 0x38000
+  region: flash_primary
+  span: [app]
+
+tfm_secure:
+  address: 0x28000
+  size: 0x8000
+  region: flash_primary
+  span: [mcuboot_pad, tfm]
+
+# ========================== Image 0: bank0 secondary ==========================
+mcuboot_secondary:
+  address: 0x68000
+  size: 0x40000
+  region: flash_primary
+
+# =========================== Image 1: bank1 primary ===========================
+mcuboot_pad_1:
+  address: 0xa8000
+  size: 0x200
+  region: flash_primary
+
+bank1:
+  address: 0xa8200
+  size: 0x27e00
+  region: flash_primary
+
+mcuboot_primary_1:
+  address: 0xa8000
+  size: 0x28000
+  region: flash_primary
+  span: [mcuboot_pad_1, bank1]
+
+# ========================== Image 1: bank1 secondary ==========================
+mcuboot_secondary_1:
+  address: 0xd0000
+  size: 0x28000
+  region: flash_primary
+
+# =============================== Settings / NVS ===============================
+settings_storage:
+  address: 0xf8000
+  size: 0x8000
+  region: flash_primary
+
+# ================================= OTP region =================================
+otp:
+  address: 0xff8388
+  size: 0x74
+  region: otp
+
+provision:
+  address: 0xff8108
+  size: 0x280
+  region: otp
+
+# ================== SRAM (unchanged from default generated) ===================
+tfm_sram:
+  address: 0x20000000
+  size: 0x8000
+  region: sram_primary
+
+mcuboot_sram:
+  address: 0x20000000
+  size: 0x8000
+  region: sram_primary
+  span: [tfm_sram]
+
+sram_secure:
+  address: 0x20000000
+  size: 0x8000
+  region: sram_primary
+  span: [tfm_sram]
+
+nrf_modem_lib_ctrl:
+  address: 0x20008000
+  size: 0x4e8
+  region: sram_primary
+
+nrf_modem_lib_tx:
+  address: 0x200084e8
+  size: 0x2080
+  region: sram_primary
+
+nrf_modem_lib_rx:
+  address: 0x2000a568
+  size: 0x2000
+  region: sram_primary
+
+nrf_modem_lib_sram:
+  address: 0x20008000
+  size: 0x4568
+  region: sram_primary
+  span: [nrf_modem_lib_ctrl, nrf_modem_lib_tx, nrf_modem_lib_rx]
+
+sram_primary:
+  address: 0x2000c568
+  size: 0x33a98
+  region: sram_primary
+
+sram_nonsecure:
+  address: 0x20008000
+  size: 0x38000
+  region: sram_primary
+  span: [nrf_modem_lib_ctrl, nrf_modem_lib_tx, nrf_modem_lib_rx, sram_primary]

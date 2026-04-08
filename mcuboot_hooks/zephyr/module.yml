@@ -1,0 +1,5 @@
+# Zephyr module descriptor. Sysbuild adds this module to the mcuboot
+# image via mcuboot_EXTRA_ZEPHYR_MODULES in sysbuild.cmake.
+name: mcuboot_hooks
+build:
+  cmake: .
