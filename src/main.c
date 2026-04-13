@@ -6,6 +6,7 @@
 #include <modem/nrf_modem_lib.h>
 #include <net/lwm2m_client_utils.h>
 
+#include "gnss.h"
 #include "temperature.h"
 #include "ecompass.h"
 #include "firmware_update.h"
@@ -43,6 +44,20 @@ static void lte_handler(const struct lte_lc_evt *const evt)
     LOG_INF("RRC mode: %s",
             evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ? "connected" : "idle");
     break;
+
+  case LTE_LC_EVT_PSM_UPDATE:
+    LOG_INF("PSM parameter update: TAU: %d s, Active time: %d s",
+            evt->psm_cfg.tau, evt->psm_cfg.active_time);
+    if (evt->psm_cfg.active_time == -1) {
+      LOG_ERR("Network rejected PSM parameters. Failed to enable PSM");
+    }
+    break;
+
+  case LTE_LC_EVT_EDRX_UPDATE:
+    LOG_INF("eDRX parameter update: eDRX: %.2f s, PTW: %.2f s",
+            (double)evt->edrx_cfg.edrx, (double)evt->edrx_cfg.ptw);
+    break;
+
   default:
     break;
   }
@@ -249,6 +264,12 @@ int main(void)
   ret = modem_configure();
   if (ret) {
     LOG_ERR("modem_configure failed: %d", ret);
+    return ret;
+  }
+
+  ret = gnss_init_and_start();
+  if (ret) {
+		LOG_ERR("Failed to initialize and start GNSS");
     return ret;
   }
 
