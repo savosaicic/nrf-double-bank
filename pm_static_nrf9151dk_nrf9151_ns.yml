@@ -98,7 +98,7 @@ app_image:
 
 tfm_nonsecure:
   address: 0x30000
-  size: 0x48000
+  size: 0xd0000
   region: flash_primary
   span: [app]
 
@@ -144,7 +144,7 @@ bank0_image:
 
 bank0_tfm_nonsecure:
   address: 0x80000
-  size: 0x3c000
+  size: 0x80000
   region: flash_primary
   span: [bank0]
 
