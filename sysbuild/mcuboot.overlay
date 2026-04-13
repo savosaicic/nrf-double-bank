@@ -7,3 +7,10 @@
     nordic,pm-ext-flash = &gd25wb256;
   };
 };
+
+/ {
+  aliases {
+    mcuboot-button0 = &button1;
+    mcuboot-led0 = &led1;
+  };
+};

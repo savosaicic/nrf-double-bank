@@ -6,6 +6,7 @@ project(bank1)
 target_include_directories(app PRIVATE include)
 target_sources(app PRIVATE
   src/main.c
+  src/gnss.c
   src/temperature.c
   src/ecompass.c
   src/firmware_update.c
