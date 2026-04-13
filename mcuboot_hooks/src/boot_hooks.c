@@ -80,3 +80,14 @@ int boot_read_swap_state_primary_slot_hook(int image_index,
 {
   return BOOT_HOOK_REGULAR;
 }
+
+int boot_serial_uploaded_hook(int img_index, const struct flash_area *area,
+                              size_t size)
+{
+  return 0;
+}
+
+int boot_reset_request_hook(bool force)
+{
+  return 0;
+}
