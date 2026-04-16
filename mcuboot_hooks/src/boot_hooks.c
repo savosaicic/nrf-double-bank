@@ -34,6 +34,23 @@ fih_ret boot_go_hook(struct boot_rsp *rsp)
   int64_t deadline;
   int     prev_sec = -1;
 
+  /*
+   * Check for a pending upgrade on either image before entering the
+   * button selection window. If a swap is scheduled (TEST or PERM),
+   * boot that image so the FOTA reboot actually installs
+   * the new firmware.
+   */
+  for (int i = 0; i < 2; i++) {
+    int swap = boot_swap_type_multi(i);
+    if (swap == BOOT_SWAP_TYPE_TEST || swap == BOOT_SWAP_TYPE_PERM ||
+        swap == BOOT_SWAP_TYPE_REVERT) {
+      printk("boot_go_hook: pending swap (type %d) on image %d, booting it\n",
+             swap, i);
+      image_index = i;
+      goto boot;
+    }
+  }
+
   if (!gpio_is_ready_dt(&btn1) || !gpio_is_ready_dt(&btn2)) {
     printk("boot_go_hook: GPIO not ready, defaulting to bank1\n");
     goto boot;
