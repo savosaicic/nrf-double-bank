@@ -243,13 +243,13 @@ static int lwm2m_setup(void)
   ret = setup_temperature_sensor();
   if (ret < 0) {
     LOG_ERR("Temperature object setup failed: %d", ret);
-    return ret;
+    //return ret;
   }
 
   ret = setup_ecompass();
   if (ret < 0) {
     LOG_ERR("eCompass object setup failed: %d", ret);
-    return ret;
+    //return ret;
   }
 
   return 0;
@@ -267,11 +267,11 @@ int main(void)
     return ret;
   }
 
-  ret = gnss_init_and_start();
-  if (ret) {
-		LOG_ERR("Failed to initialize and start GNSS");
-    return ret;
-  }
+  //ret = gnss_init_and_start();
+  //if (ret) {
+	//	LOG_ERR("Failed to initialize and start GNSS");
+  //  return ret;
+  //}
 
   LOG_INF("Starting LwM2M client");
   memset(&client_ctx, 0, sizeof(client_ctx));
