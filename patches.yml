@@ -1,0 +1,22 @@
+patches:
+  - path: nrf/0001-lwm2m-firmware-double-bank-support.patch
+    sha256sum: ac6d874a5af4c369c749562140c4630879f61b9920531bcdd888cff7c283139c
+    module: nrf
+    author: Savo Saicic
+    email: ssaicic@iliad-free.fr
+    date: 2026-04-21
+    upstreamable: false
+    comments: |
+      LwM2M firmware double bank support: extends lwm2m_client_utils with
+      dual-bank firmware update API and event handling.
+
+  - path: zephyr/0001-mcuboot-double-bank-support.patch
+    sha256sum: 26723665e2e18ab65c067eac6b29f2ccd6999132842b96226d15c98c5b7bc061
+    module: zephyr
+    author: Savo Saicic
+    email: ssaicic@iliad-free.fr
+    date: 2026-04-21
+    upstreamable: false
+    comments: |
+      MCUboot double bank support: extends mcuboot.h and mcuboot.c with
+      dual-bank slot management API.

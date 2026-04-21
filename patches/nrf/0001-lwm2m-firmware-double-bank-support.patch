@@ -1,0 +1,140 @@
+diff --git a/include/net/lwm2m_client_utils.h b/include/net/lwm2m_client_utils.h
+index b48dda0fea..b3d668a017 100644
+--- a/include/net/lwm2m_client_utils.h
++++ b/include/net/lwm2m_client_utils.h
+@@ -254,6 +254,18 @@ int lwm2m_init_firmware_cb(lwm2m_firmware_event_cb_t cb);
+  */
+ int lwm2m_init_image(void);
+ 
++/**
++ * @brief Initialize Image Update object for a specific image index.
++ *
++ * Same as lwm2m_init_image() but checks and confirms the primary slot of the
++ * given image index. Use this instead of lwm2m_init_image() when the running
++ * application is not image 0.
++ *
++ * @param image_index MCUboot image pair index to confirm.
++ * @return Zero if success, negative error code otherwise.
++ */
++int lwm2m_init_image_multi(int image_index);
++
+ #define LWM2M_OBJECT_CELLULAR_CONNECTIVITY_ID 10
+ 
+ enum lwm2m_rai_mode {
+diff --git a/subsys/net/lib/lwm2m_client_utils/lwm2m/lwm2m_firmware.c b/subsys/net/lib/lwm2m_client_utils/lwm2m/lwm2m_firmware.c
+index ea8c9cef87..8238403914 100644
+--- a/subsys/net/lib/lwm2m_client_utils/lwm2m/lwm2m_firmware.c
++++ b/subsys/net/lib/lwm2m_client_utils/lwm2m/lwm2m_firmware.c
+@@ -716,6 +716,40 @@ static bool is_duplicate_token(void)
+ 	return false;
+ }
+ 
++#include <zephyr/drivers/gpio.h>
++static const struct gpio_dt_spec btn1 = GPIO_DT_SPEC_GET(DT_ALIAS(sw0), gpios);
++static const struct gpio_dt_spec btn2 = GPIO_DT_SPEC_GET(DT_ALIAS(sw1), gpios);
++static int get_image_num_from_button(void)
++{
++	int img_num;
++
++	if (!gpio_is_ready_dt(&btn1) || !gpio_is_ready_dt(&btn2)) {
++		printk("get_image_num_from_button: GPIO not ready\n");
++		return -1;
++	}
++	gpio_pin_configure_dt(&btn1, GPIO_INPUT);
++	gpio_pin_configure_dt(&btn2, GPIO_INPUT);
++
++	LOG_INF("Choose BTN1 = bank1, BTN2 = bank0");
++	while (1) {
++		if (gpio_pin_get_dt(&btn1) > 0) {
++			img_num = 0;
++			printk("get_image_num_from_button: BTN1 pressed -> bank1\n");
++			break;
++		}
++
++		if (gpio_pin_get_dt(&btn2) > 0) {
++			img_num = 1;
++			printk("get_image_num_from_button: BTN2 pressed -> bank0\n");
++			break;
++		}
++
++		k_msleep(10);
++	}
++	LOG_INF("img_num: %d", img_num);
++	return img_num;
++}
++
+ static int firmware_block_received_cb(uint16_t obj_inst_id, uint16_t res_id, uint16_t res_inst_id,
+ 				      uint8_t *data, uint16_t data_len, bool last_block,
+ 				      size_t total_size, size_t offset)
+@@ -727,6 +761,8 @@ static int firmware_block_received_cb(uint16_t obj_inst_id, uint16_t res_id, uin
+ 	int ret = 0;
+ 	int image_type;
+ 
++	static int img_num;
++
+ 	if (!data_len) {
+ 		return -EINVAL;
+ 	}
+@@ -756,6 +792,9 @@ static int firmware_block_received_cb(uint16_t obj_inst_id, uint16_t res_id, uin
+ 			goto cleanup;
+ 		}
+ 		LOG_INF("Image type %d", image_type);
++
++		img_num = get_image_num_from_button();
++
+ 		ret = fota_download_util_dfu_target_init(image_type);
+ 		if (ret) {
+ 			goto cleanup;
+@@ -764,7 +803,7 @@ static int firmware_block_received_cb(uint16_t obj_inst_id, uint16_t res_id, uin
+ 		/* Store Started DFU type */
+ 		target_image_type_store(obj_inst_id, image_type);
+ 		do {
+-			ret = dfu_target_init(image_type, 0, total_size, dfu_target_cb);
++			ret = dfu_target_init(image_type, img_num, total_size, dfu_target_cb);
+ 			if (ret < 0) {
+ 				LOG_ERR("Failed to init DFU target, err: %d", ret);
+ 				goto cleanup;
+@@ -842,7 +881,7 @@ static int firmware_block_received_cb(uint16_t obj_inst_id, uint16_t res_id, uin
+ 	/* Last write to flash should be flush write */
+ 	ret = dfu_target_done(true);
+ 	if (ret == 0 && IS_ENABLED(CONFIG_FOTA_CLIENT_AUTOSCHEDULE_UPDATE)) {
+-		ret = dfu_target_schedule_update(0);
++		ret = dfu_target_schedule_update(img_num);
+ 	}
+ 
+ 	if (ret < 0) {
+@@ -1438,3 +1477,34 @@ int lwm2m_init_image(void)
+ 
+ 	return ret;
+ }
++
++int lwm2m_init_image_multi(int image_index)
++{
++	int ret = 0;
++	bool image_ok;
++	uint8_t state = get_state(application_obj_id);
++
++	image_ok = boot_is_img_confirmed_multi(image_index);
++	LOG_INF("Image %d is%s confirmed OK", image_index, image_ok ? "" : " not");
++	if (!image_ok) {
++		ret = boot_write_img_confirmed_multi(image_index);
++		if (ret) {
++			LOG_ERR("Couldn't confirm image %d: %d", image_index, ret);
++			return ret;
++		}
++
++		LOG_INF("Marked image %d as OK", image_index);
++		if (state == STATE_UPDATING) {
++			LOG_INF("Firmware updated successfully");
++			set_result(application_obj_id, RESULT_SUCCESS);
++		}
++
++	} else {
++		if (state == STATE_UPDATING) {
++			LOG_INF("Firmware failed to be updated");
++			set_result(application_obj_id, RESULT_UPDATE_FAILED);
++		}
++	}
++
++	return ret;
++}
