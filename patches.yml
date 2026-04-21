@@ -1,14 +1,16 @@
 patches:
-  - path: nrf/0001-lwm2m-firmware-double-bank-support.patch
-    sha256sum: ac6d874a5af4c369c749562140c4630879f61b9920531bcdd888cff7c283139c
+  - path: nrf/0001-lwm2m-adv-fota-dual-bank.patch
+    sha256sum: 57bb3bda0170420fe202f5d085565b279c1699cc5c3c92b1a8be5edbe6c1766f
     module: nrf
     author: Savo Saicic
     email: ssaicic@iliad-free.fr
     date: 2026-04-21
     upstreamable: false
     comments: |
-      LwM2M firmware double bank support: extends lwm2m_client_utils with
-      dual-bank firmware update API and event handling.
+      LwM2M Advanced Firmware Update dual bank support: replaces single
+      application/modem instances with bank1/bank0 instances, derives
+      img_num from obj_inst_id and reads bank's firmware versions from
+      PM_MCUBOOT_PRIMARY_ID and PM_MCUBOOT_PRIMARY_1_ID.
 
   - path: zephyr/0001-mcuboot-double-bank-support.patch
     sha256sum: 26723665e2e18ab65c067eac6b29f2ccd6999132842b96226d15c98c5b7bc061

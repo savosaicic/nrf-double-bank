@@ -39,8 +39,8 @@ int setup_firmware_object(void)
 
   lwm2m_init_firmware_cb(fota_event_cb);
 
-  /* Call once at boot to confirm MCUboot image and sync result to server */
-  ret = lwm2m_init_image();
+  /* Confirm MCUboot image pair 0 (bank1) and sync result to server */
+  ret = lwm2m_init_image_multi(0);
   if (ret < 0) {
     LOG_ERR("Failed to setup image properties: %d", ret);
     return ret;
