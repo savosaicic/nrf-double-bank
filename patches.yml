@@ -1,6 +1,6 @@
 patches:
   - path: nrf/0001-lwm2m-adv-fota-dual-bank.patch
-    sha256sum: 57bb3bda0170420fe202f5d085565b279c1699cc5c3c92b1a8be5edbe6c1766f
+    sha256sum: f7ea94a90b83bff5cdd448e11c2e057e4677fdbb85b0e590cdacd722d91ebd98
     module: nrf
     author: Savo Saicic
     email: ssaicic@iliad-free.fr
