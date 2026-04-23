@@ -1,6 +1,6 @@
 patches:
   - path: nrf/0001-lwm2m-adv-fota-dual-bank.patch
-    sha256sum: f7ea94a90b83bff5cdd448e11c2e057e4677fdbb85b0e590cdacd722d91ebd98
+    sha256sum: dd5b20d788f9366cf289c5b4c11ed829cbba9de12702dee3ebd528b97ee32cd5
     module: nrf
     author: Savo Saicic
     email: ssaicic@iliad-free.fr
@@ -11,14 +11,3 @@ patches:
       application/modem instances with bank1/bank0 instances, derives
       img_num from obj_inst_id and reads bank's firmware versions from
       PM_MCUBOOT_PRIMARY_ID and PM_MCUBOOT_PRIMARY_1_ID.
-
-  - path: zephyr/0001-mcuboot-double-bank-support.patch
-    sha256sum: 26723665e2e18ab65c067eac6b29f2ccd6999132842b96226d15c98c5b7bc061
-    module: zephyr
-    author: Savo Saicic
-    email: ssaicic@iliad-free.fr
-    date: 2026-04-21
-    upstreamable: false
-    comments: |
-      MCUboot double bank support: extends mcuboot.h and mcuboot.c with
-      dual-bank slot management API.
